@@ -2,13 +2,14 @@ import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { Task } from "./types/task";
 import "./task"; // import the task-item component
+import { repeat } from "lit/directives/repeat.js";
 
 @customElement("task-list")
 export class TaskList extends LitElement {
     @property({ type: Array })
     tasks: Task[] = [];
 
-    @property({ type: String })
+    @property({ type: String, reflect: true })
     name: string = "";
 
     private showCompleted: boolean = false;
@@ -19,10 +20,10 @@ export class TaskList extends LitElement {
 
         setInterval(() => {
             this.tasks = this.fetchTasks();
-        }, 1000);
+        }, 100);
     }
 
-    fetchTasks(getAll: boolean = false): Task[] {
+    fetchTasks(): Task[] {
         // fetch tasks from local storage
         let tasks = JSON.parse(
             localStorage.getItem("tasks-" + this.name) || "[]"
@@ -42,10 +43,6 @@ export class TaskList extends LitElement {
             }
         });
 
-        // if hide completed is enabled, filter out completed tasks
-        if (!this.showCompleted && !getAll) {
-            tasks = tasks.filter((task: Task) => !task.completed);
-        }
         return tasks;
     }
 
@@ -54,7 +51,7 @@ export class TaskList extends LitElement {
         const input = this.shadowRoot?.querySelector("input");
         const title = input?.value;
         if (title) {
-            const tasks: Task[] = this.fetchTasks(true);
+            const tasks: Task[] = this.fetchTasks();
             const newTask: Task = {
                 id: tasks.length + 1,
                 title,
@@ -83,21 +80,32 @@ export class TaskList extends LitElement {
         return html`
             <h2>Tasks: ${this.name}</h2>
             <ul>
-                ${this.tasks.length > 0
-                    ? this.tasks.map(
-                          (task) =>
-                              html`
-                                  <task-item
-                                      role="listitem"
-                                      task-title=${task.title}
-                                      ?task-completed=${task.completed}
-                                      task-id=${task.id}
-                                      list-name=${this.name}
-                                  ></task-item>
-                              `
+                ${this.tasks.filter((task: Task) => !task.completed).length >
+                    0 || this.showCompleted
+                    ? repeat(
+                          this.tasks,
+                          (task: Task) => task.id,
+                          (task: Task) => html`
+                              <task-item
+                                  role="listitem"
+                                  task-title=${task.title}
+                                  ?task-completed=${task.completed}
+                                  task-id=${task.id}
+                                  list-name=${this.name}
+                                  style="${task.completed && !this.showCompleted
+                                      ? "display: none;"
+                                      : ""}"
+                              ></task-item>
+                          `
                       )
                     : html`<li class="no-tasks">
                           No tasks yet! Add one below.
+                          ${!this.showCompleted && this.tasks.length > 0
+                              ? html`
+                                    (${this.tasks.length} completed task(s)
+                                    hidden)
+                                `
+                              : ""}
                       </li>`}
             </ul>
             <div class="add-task">
