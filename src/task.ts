@@ -15,6 +15,12 @@ export class TaskItem extends LitElement {
     @property({ type: String, attribute: "list-name" })
     listName: string = "";
 
+    @property({ type: String, attribute: "task-created-at" })
+    createdAt: string = new Date().toISOString();
+
+    @property({ type: String, attribute: "task-completed-at" })
+    completedAt?: string;
+
     // an extra property so that the cursor doesn't jump when editing the title
     private titleValue: string = "";
 
@@ -59,6 +65,17 @@ export class TaskItem extends LitElement {
         localStorage.setItem("tasks-" + this.listName, JSON.stringify(tasks));
     }
 
+    deleteTask(): void {
+        const tasks = JSON.parse(
+            localStorage.getItem("tasks-" + this.listName) || "[]"
+        );
+        const index = tasks.findIndex(
+            (task: any) => task.id === this.identifier
+        );
+        tasks.splice(index, 1);
+        localStorage.setItem("tasks-" + this.listName, JSON.stringify(tasks));
+    }
+
     // we need this function here to update the titleValue property whenever the task-title attribute changes
     attributeChangedCallback(
         name: string,
@@ -69,6 +86,17 @@ export class TaskItem extends LitElement {
         if (name === "task-title") {
             this.titleValue = value || "";
         }
+    }
+
+    formatDate(dateString: string): string {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+
+        // xx-xx xx:xx
+        return `${day}-${month} ${hours}:${minutes}`;
     }
 
     render() {
@@ -89,6 +117,22 @@ export class TaskItem extends LitElement {
             >
                 ${this.titleValue}
             </span>
+            <span class="date">
+                ${this.completed && this.completedAt
+                    ? this.formatDate(this.completedAt)
+                    : this.formatDate(this.createdAt)}
+            </span>
+            <button
+                type="button"
+                class="delete"
+                title="Delete task"
+                @click=${() => {
+                    this.deleteTask();
+                    this.remove();
+                }}
+            >
+                🗑️
+            </button>
         `;
     }
 
@@ -128,6 +172,28 @@ export class TaskItem extends LitElement {
         input[checked] + span {
             text-decoration: line-through;
             color: #aaa;
+        }
+
+        .date {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-left: auto;
+        }
+
+        button {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            background: none;
+            cursor: pointer;
+            color: #eee;
+            font-size: 1rem;
+            transform: scale(0.9);
+            transition: transform 0.2s ease-in-out;
+
+            &:hover {
+                transform: scale(1);
+            }
         }
     `;
 }

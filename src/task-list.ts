@@ -91,6 +91,8 @@ export class TaskList extends LitElement {
                                   task-title=${task.title}
                                   ?task-completed=${task.completed}
                                   task-id=${task.id}
+                                  task-created-at=${task.createdAt}
+                                  task-completed-at=${task.completedAt}
                                   list-name=${this.name}
                                   style="${task.completed && !this.showCompleted
                                       ? "display: none;"
