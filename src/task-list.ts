@@ -146,6 +146,8 @@ export class TaskList extends LitElement {
             padding: 0;
             display: flex;
             flex-direction: column;
+            max-height: 30vh;
+            overflow-y: auto;
         }
 
         .no-tasks {
@@ -192,7 +194,8 @@ export class TaskList extends LitElement {
         }
 
         .add-task button:focus {
-            outline: none;
+            outline: 2px solid #ddd;
+            outline-offset: 2px;
         }
     `;
 }
