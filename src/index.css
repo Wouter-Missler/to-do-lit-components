@@ -24,10 +24,18 @@ a:hover {
 
 body {
     margin: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
     min-width: 320px;
     min-height: 100vh;
+}
+
+body > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+    max-width: 400px;
 }
 
 @media (prefers-color-scheme: light) {
