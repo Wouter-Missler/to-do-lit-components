@@ -124,7 +124,7 @@ export class TaskList extends LitElement {
 
     static styles = css`
         :host {
-            min-width: 300px;
+            max-width: 100%;
         }
 
         h2 {
@@ -146,8 +146,17 @@ export class TaskList extends LitElement {
         }
 
         .add-task {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 0.5fr 0.5fr;
             gap: 0.5rem;
+
+            @media (max-width: 768px) {
+                grid-template-columns: 1fr 1fr;
+
+                & input {
+                    grid-column: 1 / span 2;
+                }
+            }
         }
 
         .add-task input {

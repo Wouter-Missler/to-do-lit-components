@@ -27,7 +27,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    min-width: 320px;
+    flex-wrap: wrap;
     min-height: 100vh;
 }
 
@@ -36,6 +36,8 @@ body > div {
     flex-direction: column;
     gap: 5rem;
     max-width: 400px;
+    padding: 0 1rem;
+    box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: light) {
