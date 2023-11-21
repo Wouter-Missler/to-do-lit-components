@@ -81,7 +81,8 @@ export class TaskList extends LitElement {
             <h2>Tasks: ${this.name}</h2>
             <ul>
                 ${this.tasks.filter((task: Task) => !task.completed).length >
-                    0 || this.showCompleted
+                    0 ||
+                (this.showCompleted && this.tasks.length > 0)
                     ? repeat(
                           this.tasks,
                           (task: Task) => task.id,
