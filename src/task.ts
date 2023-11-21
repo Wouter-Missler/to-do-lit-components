@@ -1,6 +1,5 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { Task } from "./types/task";
 
 @customElement("task-item")
 export class TaskItem extends LitElement {
