@@ -42,7 +42,7 @@ export class TaskItem extends LitElement {
 
     handleInput(e: InputEvent): void {
         const target = e.target as HTMLInputElement;
-        this.title = target.innerText;
+        this.title = target.value;
 
         // update json file
         this.updateTask({
@@ -109,14 +109,15 @@ export class TaskItem extends LitElement {
                 }}
                 ?checked=${this.completed}
             />
-            <span
-                contenteditable
+            <input
+                type="text"
+                title="Edit task"
+                spellcheck="false"
                 @input=${(e: InputEvent) => {
                     this.handleInput(e);
                 }}
-            >
-                ${this.titleValue}
-            </span>
+                value=${this.titleValue}
+            />
             <span class="date">
                 ${this.completed && this.completedAt
                     ? this.formatDate(this.completedAt)
@@ -148,9 +149,13 @@ export class TaskItem extends LitElement {
             margin-right: 0.5rem;
         }
 
-        span[contenteditable]:focus {
-            outline: none;
-            background: #040404;
+        input[type="text"] {
+            font-size: 1rem;
+        }
+
+        input[type="text"]:not(:focus) {
+            border: none;
+            background: none;
         }
 
         input[type="checkbox"] {
