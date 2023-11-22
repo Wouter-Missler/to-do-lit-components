@@ -18,9 +18,18 @@ export class TaskList extends LitElement {
         super.connectedCallback();
         this.tasks = this.fetchTasks();
 
-        setInterval(() => {
+        // initilaize a custom event listener to update the tasks
+        window.addEventListener("tasks-updated-" + this.name, () => {
             this.tasks = this.fetchTasks();
-        }, 100);
+        });
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+        // remove the custom event listener
+        window.removeEventListener("tasks-updated-" + this.name, () => {
+            this.tasks = this.fetchTasks();
+        });
     }
 
     fetchTasks(): Task[] {
@@ -62,6 +71,14 @@ export class TaskList extends LitElement {
             localStorage.setItem("tasks-" + this.name, JSON.stringify(tasks));
             this.tasks = this.fetchTasks();
             input.value = "";
+
+            // update other task lists with the same name
+            window.dispatchEvent(
+                new CustomEvent("tasks-updated-" + this.name, {
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     }
 

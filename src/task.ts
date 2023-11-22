@@ -50,7 +50,7 @@ export class TaskItem extends LitElement {
             updatedAt: new Date(),
         });
     }
-    persistTask({ ...taskArgs }): void {
+    persistTask({ ...taskArgs }, deleteItem?: boolean): void {
         // there's no api for this demo, so we'll just update the localstorage
         const tasks = JSON.parse(
             localStorage.getItem("tasks-" + this.listName) || "[]"
@@ -58,22 +58,31 @@ export class TaskItem extends LitElement {
         const index = tasks.findIndex(
             (task: any) => task.id === this.identifier
         );
-        tasks[index] = {
-            ...tasks[index],
-            ...taskArgs,
-        };
+
+        if (deleteItem) {
+            // remove the task from the list
+            tasks.splice(index, 1);
+        } else {
+            // update the task
+            tasks[index] = {
+                ...tasks[index],
+                ...taskArgs,
+            };
+        }
+
         localStorage.setItem("tasks-" + this.listName, JSON.stringify(tasks));
+
+        // update the task list
+        window.dispatchEvent(
+            new CustomEvent("tasks-updated-" + this.listName, {
+                bubbles: true,
+                composed: true,
+            })
+        );
     }
 
     deleteTask(): void {
-        const tasks = JSON.parse(
-            localStorage.getItem("tasks-" + this.listName) || "[]"
-        );
-        const index = tasks.findIndex(
-            (task: any) => task.id === this.identifier
-        );
-        tasks.splice(index, 1);
-        localStorage.setItem("tasks-" + this.listName, JSON.stringify(tasks));
+        this.persistTask({}, true);
     }
 
     // we need this function here to update the titleValue property whenever the task-title attribute changes
