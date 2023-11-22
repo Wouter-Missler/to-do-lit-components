@@ -90,10 +90,18 @@ export class TaskItem extends LitElement {
 
     formatDate(dateString: string): string {
         const date = new Date(dateString);
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
+        // making sure the date is formatted correctly 0x for single digit numbers
+        const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+        const month =
+            date.getMonth() + 1 < 10
+                ? "0" + date.getMonth() + 1
+                : date.getMonth() + 1;
+        const hours =
+            date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+        const minutes =
+            date.getMinutes() < 10
+                ? "0" + date.getMinutes()
+                : date.getMinutes();
 
         // xx-xx xx:xx
         return `${day}-${month} ${hours}:${minutes}`;
