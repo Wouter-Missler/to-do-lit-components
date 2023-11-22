@@ -142,7 +142,7 @@ export class TaskItem extends LitElement {
             display: flex;
             align-items: center;
             padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #555;
         }
 
         input {
@@ -151,6 +151,14 @@ export class TaskItem extends LitElement {
 
         input[type="text"] {
             font-size: 1rem;
+            color: #ccc;
+
+            &:focus {
+                border: none;
+                background: rgba(255, 255, 255, 0.1);
+                outline: 2px solid var(--primary);
+                outline-offset: 2px;
+            }
         }
 
         input[type="text"]:not(:focus) {
@@ -160,18 +168,25 @@ export class TaskItem extends LitElement {
 
         input[type="checkbox"] {
             cursor: pointer;
-        }
+            margin-bottom: 0.25rem;
 
-        input[type="checkbox"]:hover {
-            background: #eee;
-        }
+            &:hover {
+                background: #eee;
+            }
 
-        input[type="checkbox"]:checked {
-            background: #eee;
-        }
+            &:checked {
+                background: #eee;
+            }
 
-        input[type="checkbox"]:active {
-            background: #ddd;
+            &:focus {
+                outline: 2px solid var(--primary);
+                outline-offset: 0px;
+            }
+
+            &:active {
+                background: #ddd;
+                outline-offset: 2px;
+            }
         }
 
         input[checked] + input[type="text"] {
@@ -186,18 +201,23 @@ export class TaskItem extends LitElement {
         }
 
         button {
-            padding: 0.5rem;
+            padding: 0.25rem;
             border: none;
             border-radius: 4px;
             background: none;
             cursor: pointer;
             color: #eee;
             font-size: 1rem;
-            transform: scale(0.9);
+            transform: scale(0.8);
             transition: transform 0.2s ease-in-out;
 
-            &:hover {
-                transform: scale(1);
+            &:focus {
+                outline: 2px solid var(--primary);
+                outline-offset: 0px;
+            }
+
+            &:active {
+                outline-offset: 1px;
             }
         }
     `;
