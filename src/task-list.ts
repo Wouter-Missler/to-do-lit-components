@@ -64,19 +64,27 @@ export class TaskList extends LitElement {
     }
 
     render() {
+        // show the updated badge
+        const badge = this.shadowRoot?.querySelector(".updated-badge");
+        badge?.classList.remove("active");
+        setTimeout(() => {
+            badge?.classList.add("active");
+        }, 10);
+
+        // make sure tasks exist
         const tasks = this.taskService?.getTasks();
         if (!tasks) {
-            return html`
-                <h2>Tasks: ${this.name}</h2>
-                <p>Loading...</p>
-            `;
+            return html``;
         }
 
+        // decide whether or not to show the tasks
         const showTasks =
             tasks.filter((task: Task) => !task.completed).length > 0 || // show tasks if there are any incomplete tasks
             (this.showCompleted && tasks.length > 0); // or if showCompleted is true and there are any tasks
 
+        // render the tasks
         return html`
+            <span class="updated-badge"></span>
             <h2>Tasks: ${this.name}</h2>
             <ul>
                 ${showTasks
@@ -148,6 +156,34 @@ export class TaskList extends LitElement {
             background: rgba(0, 0, 0, 0.25);
             border: 2px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 0 15px -5px rgba(0, 0, 0, 0.25);
+        }
+
+        .updated-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px -5px rgba(0, 0, 0, 0.25);
+            transition: opacity 0.1s ease-out;
+            opacity: 0;
+
+            &.active {
+                opacity: 1;
+                animation: fade-out 0.5s ease-in-out forwards 0.1s;
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
 
         h2 {
