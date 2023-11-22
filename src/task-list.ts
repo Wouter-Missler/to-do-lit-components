@@ -10,8 +10,10 @@ export class TaskList extends LitElement {
     @property({ type: String, reflect: true })
     name: string = "";
 
+    @property({ type: Boolean, reflect: true })
+    showCompleted: boolean = false;
+
     private taskService: TaskService | undefined;
-    private showCompleted: boolean = false;
 
     connectedCallback(): void {
         super.connectedCallback();
@@ -25,14 +27,12 @@ export class TaskList extends LitElement {
         this.addEventListener("task-updated-" + this.name, (e: Event) => {
             const task = (e as CustomEvent<Task>).detail;
             this.taskService?.updateTask(task);
-            this.requestUpdate();
         });
 
         // listen for delete events from the task-item component
         this.addEventListener("task-deleted-" + this.name, (e: Event) => {
             const id = (e as CustomEvent<number>).detail;
             this.taskService?.deleteTask(id);
-            this.requestUpdate();
         });
 
         // listen to general tasks-updated event, which is dispatched from the task-service
@@ -50,7 +50,6 @@ export class TaskList extends LitElement {
         if (title) {
             this.taskService?.addTask(title);
             input.value = "";
-            this.requestUpdate();
         }
     }
 
@@ -62,8 +61,6 @@ export class TaskList extends LitElement {
         !this.showCompleted
             ? button && (button.textContent = "Show completed")
             : button && (button.textContent = "Hide completed");
-
-        this.requestUpdate();
     }
 
     render() {
