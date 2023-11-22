@@ -38,6 +38,21 @@ body > div {
     max-width: 550px;
     padding: 0 1rem;
     box-sizing: border-box;
+
+    .heading {
+        & h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        & h3 {
+            color: #ccc;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 10px 0 0 0;
+        }
+    }
 }
 
 @media (prefers-color-scheme: light) {

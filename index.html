@@ -10,12 +10,18 @@
     </head>
     <body>
         <div>
-            <h1>Task list components with the same name</h1>
+            <div class="heading">
+                <h1>Task list components using the same name attribute.</h1>
+                <h3>They sync up by using custom events defined by the name</h3>
+            </div>
             <task-list name="Same Name"></task-list>
             <task-list name="Same Name"></task-list>
         </div>
         <div>
-            <h1>Task list components with unique names</h1>
+            <div class="heading">
+                <h1>Task list components using different name attributes.</h1>
+                <h3>They do not sync up</h3>
+            </div>
             <task-list name="Unique Name"></task-list>
             <task-list name="Unique Name 2"></task-list>
         </div>

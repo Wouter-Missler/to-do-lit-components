@@ -50,6 +50,7 @@ export class TaskItem extends LitElement {
             updatedAt: new Date(),
         });
     }
+
     persistTask({ ...taskArgs }, deleteItem?: boolean): void {
         // there's no api for this demo, so we'll just update the localstorage
         const tasks = JSON.parse(
