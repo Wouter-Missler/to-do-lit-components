@@ -62,7 +62,7 @@ export class TaskList extends LitElement {
         if (title) {
             const tasks: Task[] = this.fetchTasks();
             const newTask: Task = {
-                id: tasks.length + 1,
+                id: this.generateId(),
                 title,
                 completed: false,
                 createdAt: new Date(),
@@ -80,6 +80,13 @@ export class TaskList extends LitElement {
                 })
             );
         }
+    }
+
+    generateId() {
+        // find the highest id in the list and return the next id, or 1 if the list is empty
+        return this.tasks.length > 0
+            ? this.tasks.sort((a: Task, b: Task) => b.id - a.id)[0].id + 1
+            : 1;
     }
 
     toggleHideCompleted(): void {
