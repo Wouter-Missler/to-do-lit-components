@@ -174,7 +174,7 @@ export class TaskItem extends LitElement {
             background: #ddd;
         }
 
-        input[checked] + span {
+        input[checked] + input[type="text"] {
             text-decoration: line-through;
             color: #aaa;
         }
