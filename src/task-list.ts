@@ -1,58 +1,46 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { Task } from "./types/task";
+import type { Task } from "./service/task";
 import "./task"; // import the task-item component
 import { repeat } from "lit/directives/repeat.js";
+import { TaskService } from "./service/task-service";
 
 @customElement("task-list")
 export class TaskList extends LitElement {
-    @property({ type: Array })
-    tasks: Task[] = [];
-
     @property({ type: String, reflect: true })
     name: string = "";
 
+    private taskService: TaskService | undefined;
     private showCompleted: boolean = false;
 
     connectedCallback(): void {
         super.connectedCallback();
-        this.tasks = this.fetchTasks();
 
-        // initilaize a custom event listener to update the tasks
+        this.taskService = new TaskService(this.name);
+
+        // I am adding the this.name to the event name to make it unique to the necessary task-lists
+        // without it, every task-list would listen to every task(s)-updated event
+
+        // listen for update events from the task-item component
+        this.addEventListener("task-updated-" + this.name, (e: Event) => {
+            const task = (e as CustomEvent<Task>).detail;
+            this.taskService?.updateTask(task);
+            this.requestUpdate();
+        });
+
+        // listen for delete events from the task-item component
+        this.addEventListener("task-deleted-" + this.name, (e: Event) => {
+            const id = (e as CustomEvent<number>).detail;
+            this.taskService?.deleteTask(id);
+            this.requestUpdate();
+        });
+
+        // listen to general tasks-updated event, which is dispatched from the task-service
+        // the only reason this is necessary is because we want to be able to have multiple task-lists
+        // with the same name that stay in sync with each other
         window.addEventListener("tasks-updated-" + this.name, () => {
-            this.tasks = this.fetchTasks();
+            this.requestUpdate();
         });
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback();
-        // remove the custom event listener
-        window.removeEventListener("tasks-updated-" + this.name, () => {
-            this.tasks = this.fetchTasks();
-        });
-    }
-
-    fetchTasks(): Task[] {
-        // fetch tasks from local storage
-        let tasks = JSON.parse(
-            localStorage.getItem("tasks-" + this.name) || "[]"
-        );
-
-        // sort the tasks on the basis of completed and createdAt
-        tasks = tasks.sort((a: Task, b: Task) => {
-            if (a.completed && !b.completed) {
-                return 1;
-            } else if (!a.completed && b.completed) {
-                return -1;
-            } else {
-                return (
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                );
-            }
-        });
-
-        return tasks;
     }
 
     addItem(): void {
@@ -60,55 +48,43 @@ export class TaskList extends LitElement {
         const input = this.shadowRoot?.querySelector("input");
         const title = input?.value;
         if (title) {
-            const tasks: Task[] = this.fetchTasks();
-            const newTask: Task = {
-                id: this.generateId(),
-                title,
-                completed: false,
-                createdAt: new Date(),
-            };
-            tasks.push(newTask);
-            localStorage.setItem("tasks-" + this.name, JSON.stringify(tasks));
-            this.tasks = this.fetchTasks();
+            this.taskService?.addTask(title);
             input.value = "";
-
-            // update other task lists with the same name
-            window.dispatchEvent(
-                new CustomEvent("tasks-updated-" + this.name, {
-                    bubbles: true,
-                    composed: true,
-                })
-            );
+            this.requestUpdate();
         }
-    }
-
-    generateId() {
-        // find the highest id in the list and return the next id, or 1 if the list is empty
-        return this.tasks.length > 0
-            ? this.tasks.sort((a: Task, b: Task) => b.id - a.id)[0].id + 1
-            : 1;
     }
 
     toggleHideCompleted(): void {
         // toggle the hide completed button
         this.showCompleted = !this.showCompleted;
-        this.tasks = this.fetchTasks();
 
         const button = this.shadowRoot?.querySelector(".hide-button");
         !this.showCompleted
             ? button && (button.textContent = "Show completed")
             : button && (button.textContent = "Hide completed");
+
+        this.requestUpdate();
     }
 
     render() {
+        const tasks = this.taskService?.getTasks();
+        if (!tasks) {
+            return html`
+                <h2>Tasks: ${this.name}</h2>
+                <p>Loading...</p>
+            `;
+        }
+
+        const showTasks =
+            tasks.filter((task: Task) => !task.completed).length > 0 || // show tasks if there are any incomplete tasks
+            (this.showCompleted && tasks.length > 0); // or if showCompleted is true and there are any tasks
+
         return html`
             <h2>Tasks: ${this.name}</h2>
             <ul>
-                ${this.tasks.filter((task: Task) => !task.completed).length >
-                    0 ||
-                (this.showCompleted && this.tasks.length > 0)
+                ${showTasks
                     ? repeat(
-                          this.tasks,
+                          tasks,
                           (task: Task) => task.id,
                           (task: Task) => html`
                               <task-item
@@ -125,15 +101,17 @@ export class TaskList extends LitElement {
                               ></task-item>
                           `
                       )
-                    : html`<li class="no-tasks">
-                          No tasks yet! Add one below.
-                          ${!this.showCompleted && this.tasks.length > 0
-                              ? html`
-                                    (${this.tasks.length} completed task(s)
-                                    hidden)
-                                `
-                              : ""}
-                      </li>`}
+                    : html`
+                          <li class="no-tasks">
+                              No tasks yet! Add one below.
+                              ${!this.showCompleted && tasks.length > 0
+                                  ? html`
+                                        (${tasks.length} completed task(s)
+                                        hidden)
+                                    `
+                                  : ""}
+                          </li>
+                      `}
             </ul>
             <div class="add-task">
                 <input

@@ -32,7 +32,7 @@ export class TaskItem extends LitElement {
     toggleCompleted(e: InputEvent): void {
         this.completed = (e.target as HTMLInputElement).checked;
 
-        this.persistTask({
+        this.updateTask({
             title: this.title,
             completed: this.completed,
             updatedAt: new Date(),
@@ -45,45 +45,35 @@ export class TaskItem extends LitElement {
         this.title = target.innerText;
 
         // update json file
-        this.persistTask({
+        this.updateTask({
             title: this.title,
             updatedAt: new Date(),
         });
     }
 
-    persistTask({ ...taskArgs }, deleteItem?: boolean): void {
-        // there's no api for this demo, so we'll just update the localstorage
-        const tasks = JSON.parse(
-            localStorage.getItem("tasks-" + this.listName) || "[]"
-        );
-        const index = tasks.findIndex(
-            (task: any) => task.id === this.identifier
-        );
-
-        if (deleteItem) {
-            // remove the task from the list
-            tasks.splice(index, 1);
-        } else {
-            // update the task
-            tasks[index] = {
-                ...tasks[index],
-                ...taskArgs,
-            };
-        }
-
-        localStorage.setItem("tasks-" + this.listName, JSON.stringify(tasks));
-
-        // update the task list
-        window.dispatchEvent(
-            new CustomEvent("tasks-updated-" + this.listName, {
+    updateTask({ ...taskArgs }): void {
+        //update the task
+        this.dispatchEvent(
+            new CustomEvent("task-updated-" + this.listName, {
                 bubbles: true,
                 composed: true,
+                detail: {
+                    id: this.identifier,
+                    ...taskArgs,
+                },
             })
         );
     }
 
     deleteTask(): void {
-        this.persistTask({}, true);
+        // delete the task
+        this.dispatchEvent(
+            new CustomEvent("task-deleted-" + this.listName, {
+                bubbles: true,
+                composed: true,
+                detail: this.identifier,
+            })
+        );
     }
 
     // we need this function here to update the titleValue property whenever the task-title attribute changes
