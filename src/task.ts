@@ -158,6 +158,7 @@ export class TaskItem extends LitElement {
         }
 
         input[type="text"] {
+            flex-grow: 1;
             font-size: 1rem;
             color: #ccc;
 
@@ -206,6 +207,9 @@ export class TaskItem extends LitElement {
             font-size: 0.8rem;
             color: #aaa;
             margin-left: auto;
+            width: fit-content;
+            padding-inline: 1rem;
+            text-align: right;
         }
 
         button {
