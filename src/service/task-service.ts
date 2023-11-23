@@ -11,6 +11,11 @@ export class TaskService {
 
         // initialize the tasks
         this.tasks = this.fetchTasks();
+
+        // listen for an update on the tasks, necessary for syncing multiple task-lists
+        window.addEventListener("tasks-updated-" + this.listName, () => {
+            this.tasks = this.fetchTasks();
+        });
     }
 
     // fetch tasks from local storage
@@ -99,9 +104,6 @@ export class TaskService {
     }
 
     public getTasks(): Task[] {
-        // I would love to use a getter here, but I can't because each task-list component has its own instance of the task-service
-        // which have to stay in sync with each other when they have the same name, this was the only way I could figure out how to do that
-        // but there is probably a better way... :)
-        return this.fetchTasks();
+        return this.tasks;
     }
 }
