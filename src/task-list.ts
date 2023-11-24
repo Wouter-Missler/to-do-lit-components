@@ -8,7 +8,7 @@ import { TaskService } from "./service/task-service";
 @customElement("task-list")
 export class TaskList extends LitElement {
     @property({ type: String, reflect: true })
-    name: string = "";
+    name?: string;
 
     @property({ type: Boolean, reflect: true })
     showCompleted: boolean = false;
@@ -18,19 +18,31 @@ export class TaskList extends LitElement {
     connectedCallback(): void {
         super.connectedCallback();
 
+        if (!this.name) {
+            throw new Error("Task list must have a name");
+        }
+
         this.taskService = new TaskService(this.name);
+        this.callEventListeners("addEventListener");
+    }
 
-        // I am adding the this.name to the event name to make it unique to the necessary task-lists
-        // without it, every task-list would listen to every task(s)-updated event
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this.callEventListeners("removeEventListener");
+    }
 
+    // I'm giving the option to add and remove event listeners
+    // because I want to be able to remove them after the component is disconnected / changed
+    callEventListeners(type: "addEventListener" | "removeEventListener"): void {
+        console.log("called: " + type + " on task-list " + this.name);
         // listen for update events from the task-item component
-        this.addEventListener("task-updated-" + this.name, (e: Event) => {
+        this[type]("task-updated-" + this.name, (e: Event) => {
             const task = (e as CustomEvent<Task>).detail;
             this.taskService?.updateTask(task);
         });
 
         // listen for delete events from the task-item component
-        this.addEventListener("task-deleted-" + this.name, (e: Event) => {
+        this[type]("task-deleted-" + this.name, (e: Event) => {
             const id = (e as CustomEvent<number>).detail;
             this.taskService?.deleteTask(id);
         });
@@ -38,7 +50,7 @@ export class TaskList extends LitElement {
         // listen to general tasks-updated event, which is dispatched from the task-service
         // the only reason this is necessary is because we want to be able to have multiple task-lists
         // with the same name that stay in sync with each other
-        window.addEventListener("tasks-updated-" + this.name, () => {
+        window[type]("tasks-updated-" + this.name, () => {
             this.requestUpdate();
         });
     }
@@ -61,6 +73,26 @@ export class TaskList extends LitElement {
         !this.showCompleted
             ? button && (button.textContent = "Show completed")
             : button && (button.textContent = "Hide completed");
+    }
+
+    attributeChangedCallback(
+        name: string,
+        old: string | null,
+        value: string | null
+    ): void {
+        super.attributeChangedCallback(name, old, value);
+
+        // if the name attribute changes, update the taskService
+        // checking for null to emit first render
+        if (name === "name" && value && old !== null) {
+            // I am adding the this.name to the event name to make it unique to the necessary task-lists
+            // without it, every task-list would listen to every task(s)-updated event
+            this.taskService = new TaskService(value);
+
+            // remove the old event listeners and add the new ones
+            this.callEventListeners("removeEventListener");
+            this.callEventListeners("addEventListener");
+        }
     }
 
     render() {
