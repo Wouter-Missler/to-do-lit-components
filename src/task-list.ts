@@ -96,60 +96,64 @@ export class TaskList extends LitElement {
     }
 
     render() {
-        // show the updated badge
+        // show the updated badge (for dev purposes)
         const badge = this.shadowRoot?.querySelector(".updated-badge");
         badge?.classList.remove("active");
         setTimeout(() => {
             badge?.classList.add("active");
         }, 10);
 
-        // make sure tasks exist
+        // make sure tasks exist, could show a fallback message here
         const tasks = this.taskService?.getTasks();
         if (!tasks) {
             return html``;
         }
 
         // decide whether or not to show the tasks
+        // this if statement felt a bit too long to inline
         const showTasks =
             tasks.filter((task: Task) => !task.completed).length > 0 || // show tasks if there are any incomplete tasks
             (this.showCompleted && tasks.length > 0); // or if showCompleted is true and there are any tasks
+
+        // same here, could be more consise.
+        const noTasksMessage = html`
+            <li class="no-tasks">
+                No tasks yet! Add one below.
+                ${!this.showCompleted && tasks && tasks.length > 0
+                    ? html`(${tasks.length} completed task(s) hidden)`
+                    : ""}
+            </li>
+        `;
 
         // render the tasks
         return html`
             <span class="updated-badge"></span>
             <h2>Tasks: ${this.name}</h2>
             <ul>
-                ${showTasks
-                    ? repeat(
-                          tasks,
-                          (task: Task) => task.id,
-                          (task: Task) => html`
-                              <task-item
-                                  role="listitem"
-                                  task-title=${task.title}
-                                  ?task-completed=${task.completed}
-                                  task-id=${task.id}
-                                  task-created-at=${task.createdAt}
-                                  task-completed-at=${task.completedAt}
-                                  list-name=${this.name}
-                                  style="${task.completed && !this.showCompleted
-                                      ? "display: none;"
-                                      : ""}"
-                              ></task-item>
-                          `
-                      )
-                    : html`
-                          <li class="no-tasks">
-                              No tasks yet! Add one below.
-                              ${!this.showCompleted && tasks.length > 0
-                                  ? html`
-                                        (${tasks.length} completed task(s)
-                                        hidden)
-                                    `
-                                  : ""}
-                          </li>
-                      `}
+                ${
+                    showTasks
+                        ? repeat(
+                              tasks, // the array to repeat over
+                              (task: Task) => task.id, // the key to use for each item
+                              (task: Task) => html`
+                                  <task-item
+                                      task-title=${task.title}
+                                      ?task-completed=${task.completed}
+                                      task-id=${task.id}
+                                      task-created-at=${task.createdAt}
+                                      task-completed-at=${task.completedAt}
+                                      list-name=${this.name}
+                                      style="${task.completed &&
+                                      !this.showCompleted
+                                          ? "display: none;"
+                                          : ""}"
+                                  ></task-item>
+                              ` // the template to repeat
+                          )
+                        : noTasksMessage /* a fallback message if there are no tasks */
+                }
             </ul>
+            <!-- the following ui could be split into its own component, but fine for this use case -->
             <div class="add-task">
                 <input
                     type="text"
